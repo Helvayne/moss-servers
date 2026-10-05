@@ -1,6 +1,9 @@
 # servers.justinhere.net — design
 
-Status: approved design, 2026-10-05. Implementation plan to follow.
+Status: approved design, 2026-10-05. Implementation plan: `docs/plans/2026-10-05-servers-site.md`.
+
+**Amended while planning (2026-10-05):** release metadata is committed by a workflow instead of
+fetched at build time; the banner is a Markdown file; `address` is optional. Sections below reflect this.
 
 > This repo is **public**. Nothing in it may contain IP addresses, port numbers, player names,
 > or other private details about the servers. See [Privacy guard](#privacy-guard).
@@ -28,7 +31,7 @@ it's up, how to join, download modpacks, and read changelogs and news.
 Single page at `/`, top to bottom:
 
 1. **Header** with the site name.
-2. **Status banner**, shown only when enabled in `src/data/banner.yaml`.
+2. **Status banner**, shown only when enabled in `src/content/banner/banner.md`.
 3. **Server cards**, one column, full width, ordered by `order`.
 4. **News**: latest posts, same collapsible style. A `/news` archive page is out of scope until there
    are enough posts to need it.
@@ -101,7 +104,8 @@ About text (Markdown).
 ```
 
 `status: hidden` removes the server from the page entirely. `address` is a hostname only: never an
-IP, never a port.
+IP, never a port. It is optional (a server without a public address shows no address or copy button),
+but `status: live` requires one.
 
 ### Changelog — `src/content/changelog/<slug>/<YYYY-MM-DD>.md`
 
@@ -112,11 +116,13 @@ Body: Markdown, usually a bullet list. A second entry on the same day uses `<YYY
 
 Frontmatter: `title`, `date`, optional `servers: [slug, ...]`. Body: Markdown.
 
-### Banner — `src/data/banner.yaml`
+### Banner — `src/content/banner/banner.md`
 
-```yaml
+```markdown
+---
 enabled: false
-text: "Short message, Markdown allowed"
+---
+Short message, Markdown allowed.
 ```
 
 ## 3. Live status — `/api/status`
@@ -194,15 +200,19 @@ handled.
 
 ### Site build
 
-At build time the site calls the GitHub REST API for this repo's releases, picks the newest
-non-draft, non-prerelease release whose tag starts with `<pack>-v`, and maps assets to `downloads[]`
-entries by their `-<variant>.mrpack` suffix. A `downloads` entry with no matching asset fails the build. Each download block shows the note, version, file size and a direct asset link,
-plus an "Older versions" link to the repo's Releases page.
+Release metadata is **committed to the repo**, not fetched during the Vercel build (Vercel build
+machines share IPs, so unauthenticated GitHub API calls can hit the hourly limit and fail deploys).
 
-If the API call fails, **the build fails** and Vercel keeps serving the previous deployment.
+`.github/workflows/release-sync.yml` runs on release `published`, `edited`, `unpublished` and `deleted`
+events (and manually). It runs `scripts/sync_releases.py` with the workflow's built-in token, which
+picks the newest non-draft, non-prerelease release per pack whose tag is `<pack>-v<version>` and maps
+its `<pack>-<version>-<variant>.mrpack` assets to variants. It writes `src/data/releases.json` and
+commits it to `main` if it changed; that push triggers the Vercel deploy. No deploy-hook secret is needed.
 
-`.github/workflows/release-rebuild.yml`: on `release: published`, POST to the Vercel deploy hook stored
-in the `VERCEL_DEPLOY_HOOK` repository secret.
+At build time each `downloads` entry is matched to an asset by variant. A pack with no published
+release yet shows "No download yet". A release that lacks a variant listed in `downloads` **fails the
+build**, so Vercel keeps serving the previous deployment. Each download block shows the note, version,
+file size and a direct asset link, plus an "Older versions" link to the repo's Releases page.
 
 ## 5. Repo, CI, deployment
 
@@ -232,8 +242,7 @@ in the `VERCEL_DEPLOY_HOOK` repository secret.
 
 ## Launch checklist
 
-1. Repo created; token access verified; Vercel project imported; deploy hook secret and
-   `PRIVACY_DENYLIST` secret added.
+1. Repo created; token access verified; Vercel project imported; `PRIVACY_DENYLIST` secret added.
 2. Site built with first-round content (four server files, rewritten C&C changelog history); owner
    reviews on the preview deployment.
 3. Each server's whitelist setting checked, so it's known whether a public address lets strangers join.

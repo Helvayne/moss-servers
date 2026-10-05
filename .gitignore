@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.vercel/
+.astro/
+__pycache__/
+*.mrpack
+.env
