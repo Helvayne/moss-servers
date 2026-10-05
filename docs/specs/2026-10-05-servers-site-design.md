@@ -32,7 +32,7 @@ Single page at `/`, top to bottom:
 3. **Server cards**, one column, full width, ordered by `order`.
 4. **News**: latest posts, same collapsible style. A `/news` archive page is out of scope until there
    are enough posts to need it.
-5. **Footer**.
+5. **Footer**: site name and a link to the GitHub Releases page. No Discord invite link (decided 2026-10-05).
 
 ### Server card
 
@@ -63,6 +63,7 @@ Behaviour:
 | Green "Online · n/max" | Server answered the status ping. |
 | Red "Offline" | No answer within the timeout. Means "not reachable from the internet". |
 | Grey "On request" | `status: on-request`. No ping is made. |
+| *(no indicator)* | `status: none`. The card shows no status at all. |
 
 ## 2. Content model
 
@@ -79,7 +80,7 @@ order: 1
 game: minecraft-java          # minecraft-java | hytale
 version: "1.21.1 · NeoForge 21.1.248"
 address: cogsandcurses.justinhere.net
-status: live                  # live | on-request | hidden
+status: live                  # live | on-request | none | hidden
 pack: cogsandcurses           # optional; links Downloads to releases tagged cogsandcurses-v*
 ram: 8 GB                     # optional
 join:
@@ -136,7 +137,8 @@ One Vercel serverless function (Node runtime; it needs raw TCP).
 Client: fetches once on load, then every 60 s while `document.visibilityState === "visible"`.
 Any fetch error leaves indicators grey; the rest of the page is unaffected.
 
-Hytale uses a different protocol and is not pinged; its card uses `on-request` or `hidden`.
+Hytale uses a different protocol and is not pinged. Its card is listed like the others but uses
+`status: none` (decided 2026-10-05: no status for Hytale).
 
 **Tests**
 
@@ -246,6 +248,11 @@ Discord-channel mirroring, an admin editor.
 
 ## Open questions (content, not design)
 
-- Discord invite link in the footer: yes or no.
-- Hytale: `hidden` until it has a public address, or listed as `on-request`.
 - Intro text and the site's display name.
+- Hytale's public address. Hytale clients don't resolve SRV records, so the address is a plain DNS
+  name, and players must type the port unless the server uses Hytale's default port. Recommended:
+  move the server to the default port so the published address is just a hostname. Until it is
+  reachable from outside, its card says so in the How to join section.
+
+Resolved 2026-10-05: no Discord invite link; Hytale is listed like the other servers, with no status
+indicator.
