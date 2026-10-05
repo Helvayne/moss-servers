@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run test:py
+      - run: npm run build
+      - name: Privacy guard
+        run: python scripts/privacy_check.py
+        env:
+          PRIVACY_DENYLIST: ${{ secrets.PRIVACY_DENYLIST }}

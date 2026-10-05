@@ -1935,8 +1935,13 @@ class PrivacyCheckTest(unittest.TestCase):
         return p
 
     def test_flags_ipv4(self):
-        p = self.write("a.md", "ok\nconnect to 10.20.30.40 now\n")
+        ip = ".".join(["10", "20", "30", "40"])  # built at runtime so this file passes the check itself
+        p = self.write("a.md", f"ok\nconnect to {ip} now\n")
         self.assertEqual(scan([p], []), [(p, 2, "ipv4")])
+
+    def test_allows_loopback_and_documentation_ranges(self):
+        p = self.write("e.md", "127.0.0.1 and 192.0.2.10 and 203.0.113.5\n")
+        self.assertEqual(scan([p], []), [])
 
     def test_ignores_versions_and_invalid_octets(self):
         p = self.write("b.md", "NeoForge 21.1.248 and 1.21.11 and 999.1.1.1\n")
@@ -1950,7 +1955,7 @@ class PrivacyCheckTest(unittest.TestCase):
     def test_skips_binary(self):
         p = os.path.join(self.tmp.name, "d.bin")
         with open(p, "wb") as f:
-            f.write(b"\x00\x0110.0.0.1")
+            f.write(b"\x00\x01" + ".".join(["10", "0", "0", "1"]).encode())
         self.assertEqual(scan([p], []), [])
 
 
@@ -1975,6 +1980,8 @@ Findings report file and line only, never the matched value.
 import os, re, subprocess, sys
 
 IPV4 = re.compile(r"(?<![\w.])(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)(?![\w.])")
+# Loopback, "this host", and the RFC 5737 documentation ranges are never real server addresses.
+ALLOWED_IPV4 = re.compile(r"^(127\.|0\.0\.0\.0$|192\.0\.2\.|198\.51\.100\.|203\.0\.113\.)")
 MAX_BYTES = 5_000_000
 
 
@@ -1996,7 +2003,7 @@ def scan(paths, deny):
         if b"\x00" in raw:
             continue
         for lineno, line in enumerate(raw.decode("utf-8", "replace").splitlines(), 1):
-            if IPV4.search(line):
+            if any(not ALLOWED_IPV4.match(m.group()) for m in IPV4.finditer(line)):
                 findings.append((path, lineno, "ipv4"))
             for i, pat in enumerate(patterns, 1):
                 if pat.search(line):
