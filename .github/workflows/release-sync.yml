@@ -1,0 +1,32 @@
+name: Sync pack releases
+on:
+  release:
+    types: [published, edited, unpublished, deleted]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: release-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Write src/data/releases.json
+        run: python scripts/sync_releases.py --repo "${{ github.repository }}" --out src/data/releases.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- src/data/releases.json; then echo "No change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/data/releases.json
+          git commit -m "chore: sync pack releases"
+          git push origin HEAD:main
