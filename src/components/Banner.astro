@@ -1,0 +1,9 @@
+---
+import { getCollection, render } from 'astro:content';
+const entry = (await getCollection('banner'))[0];
+const show = entry?.data.enabled;
+const Content = show ? (await render(entry)).Content : null;
+---
+{show && Content && (
+  <div class="banner" role="status"><div class="wrap"><Content /></div></div>
+)}

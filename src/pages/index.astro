@@ -1,5 +1,51 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
+import Banner from '../components/Banner.astro';
+import ServerCard from '../components/ServerCard.astro';
+import News from '../components/News.astro';
 import { site } from '../site.config';
+import { resolveDownloads, type ReleasesFile } from '../lib/releases';
+import { checkReferences, byDateDesc } from '../lib/content';
+import releasesJson from '../data/releases.json';
+
+const releases = releasesJson as ReleasesFile;
+const allServers = await getCollection('servers');
+const changelog = (await getCollection('changelog')).sort(byDateDesc);
+const news = (await getCollection('news')).sort(byDateDesc);
+
+checkReferences(
+  allServers.map((s) => s.id),
+  changelog.map((c) => c.data.server),
+  news.flatMap((n) => n.data.servers),
+);
+
+const servers = allServers.filter((s) => s.data.status !== 'hidden').sort((a, b) => a.data.order - b.data.order);
+const cards = servers.map((server) => ({
+  server,
+  downloads: resolveDownloads(server.id, server.data.pack, server.data.downloads, releases),
+  changelog: changelog.filter((c) => c.data.server === server.id),
+}));
+const serverNames = Object.fromEntries(allServers.map((s) => [s.id, s.data.name]));
 ---
-<Layout><main class="wrap"><h1>{site.name}</h1></main></Layout>
+<Layout>
+  <Banner />
+  <header class="site-header">
+    <div class="wrap">
+      <h1>{site.name}</h1>
+      <p class="tagline">{site.tagline}</p>
+    </div>
+  </header>
+  <main class="wrap">
+    <section class="servers" aria-label="Servers">
+      {cards.map((c) => <ServerCard {...c} />)}
+    </section>
+    <News posts={news} serverNames={serverNames} />
+  </main>
+  <footer class="site-footer">
+    <div class="wrap muted small">
+      {site.name} · <a href={`https://github.com/${site.repo}/releases`}>Pack downloads on GitHub</a>
+    </div>
+  </footer>
+  <script src="../scripts/client.ts"></script>
+</Layout>

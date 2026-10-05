@@ -1,0 +1,63 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+import type { Downloads as DownloadsData } from '../lib/releases';
+import { mdInline } from '../lib/markdown';
+import Downloads from './Downloads.astro';
+import Changelog from './Changelog.astro';
+interface Props {
+  server: CollectionEntry<'servers'>;
+  downloads: DownloadsData;
+  changelog: CollectionEntry<'changelog'>[];
+}
+const { server, downloads, changelog } = Astro.props;
+const { id } = server;
+const d = server.data;
+const { Content } = await render(server);
+const gameLabel = d.game === 'hytale' ? 'Hytale' : 'Minecraft Java';
+const initialState = d.status === 'live' ? 'checking' : d.status === 'on-request' ? 'on-request' : null;
+const initialText = { checking: 'Checking…', 'on-request': 'On request' } as const;
+---
+<details class="card" id={id}>
+  <summary>
+    <span class="card-main">
+      <span class="card-title">{d.name}</span>
+      <span class="card-meta">{gameLabel} · {d.version}</span>
+    </span>
+    {initialState && (
+      <span class="status" data-status-for={id} data-state={initialState}>
+        <span class="dot" aria-hidden="true"></span><span class="status-text">{initialText[initialState]}</span>
+      </span>
+    )}
+    {d.address && (
+      <span class="address">
+        <code>{d.address}</code>
+        <button class="copy" type="button" data-copy={d.address} aria-label={`Copy ${d.address}`}>Copy</button>
+      </span>
+    )}
+    <span class="chevron" aria-hidden="true"></span>
+  </summary>
+  <div class="panel">
+    <details class="section" id={`${id}-about`} open>
+      <summary>About</summary>
+      <div class="section-body"><Content /></div>
+    </details>
+    <details class="section" id={`${id}-join`} open>
+      <summary>How to join</summary>
+      <div class="section-body">
+        <ol class="steps">{d.join.map((step) => <li set:html={mdInline(step)} />)}</ol>
+        {d.ram && <p class="muted small">Recommended memory: {d.ram}.</p>}
+      </div>
+    </details>
+    {downloads.state !== 'none' && (
+      <details class="section" id={`${id}-downloads`}>
+        <summary>Downloads</summary>
+        <div class="section-body"><Downloads downloads={downloads} /></div>
+      </details>
+    )}
+    <details class="section" id={`${id}-changelog`}>
+      <summary>Changelog</summary>
+      <div class="section-body"><Changelog entries={changelog} /></div>
+    </details>
+  </div>
+</details>

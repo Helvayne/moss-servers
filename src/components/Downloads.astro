@@ -1,0 +1,23 @@
+---
+import type { Downloads } from '../lib/releases';
+import { md } from '../lib/markdown';
+import { formatBytes, formatDate } from '../lib/format';
+import { site } from '../site.config';
+interface Props { downloads: Downloads }
+const { downloads } = Astro.props;
+---
+{downloads.state === 'missing-release' && <p class="muted">No download yet. Check back soon.</p>}
+{downloads.state === 'ok' && (
+  <div class="downloads">
+    <p class="muted">Version <strong>{downloads.version}</strong>, released {formatDate(downloads.publishedAt)}.</p>
+    {downloads.items.map((item) => (
+      <div class="download">
+        {item.note && <div class="note" set:html={md(item.note)} />}
+        <a class="button" href={item.asset.url} download>
+          Download {item.label} <span class="size">{formatBytes(item.asset.size)}</span>
+        </a>
+      </div>
+    ))}
+    <p class="muted small"><a href={`https://github.com/${site.repo}/releases`}>Older versions</a></p>
+  </div>
+)}
