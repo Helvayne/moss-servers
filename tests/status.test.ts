@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { stripFormatting, motdText, toPublicStatus, resolveTarget, checkAll } from '../src/lib/status';
+import { stripFormatting, motdText, toPublicStatus, resolveTarget, checkAll, cacheControl } from '../src/lib/status';
 
 describe('formatting', () => {
   it('strips section-sign codes', () => {
@@ -69,5 +69,14 @@ describe('checkAll', () => {
     );
     expect(out).toEqual({ up: { online: true, players: { online: 1, max: 5 } }, down: { online: false } });
     expect(JSON.stringify(out)).not.toContain('Hidden');
+  });
+});
+
+describe('cacheControl', () => {
+  it('caches for 60 s when everything answered', () => {
+    expect(cacheControl({ a: { online: true } })).toBe('public, s-maxage=60, stale-while-revalidate=30');
+  });
+  it('caches briefly when a server looked offline, so a dropped ping clears quickly', () => {
+    expect(cacheControl({ a: { online: true }, b: { online: false } })).toBe('public, s-maxage=20, stale-while-revalidate=10');
   });
 });

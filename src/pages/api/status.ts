@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import { checkAll } from '../../lib/status';
+import { cacheControl, checkAll } from '../../lib/status';
 
 export const prerender = false;
 
@@ -12,7 +12,7 @@ export const GET: APIRoute = async () => {
   return new Response(JSON.stringify(statuses), {
     headers: {
       'content-type': 'application/json',
-      'cache-control': 'public, s-maxage=60, stale-while-revalidate=30',
+      'cache-control': cacheControl(statuses),
     },
   });
 };

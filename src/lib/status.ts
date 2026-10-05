@@ -78,3 +78,12 @@ export async function checkAll(
   const results = await Promise.all(servers.map((s) => checkOne(s.address, timeoutMs, deps)));
   return Object.fromEntries(servers.map((s, i) => [s.id, results[i]]));
 }
+
+// Some home routers/servers drop a second status connection from the same address for ~10-15 s.
+// A dropped ping looks like "offline", so cache those responses briefly to let them clear.
+export function cacheControl(statuses: Record<string, PublicStatus>): string {
+  const anyOffline = Object.values(statuses).some((s) => !s.online);
+  return anyOffline
+    ? 'public, s-maxage=20, stale-while-revalidate=10'
+    : 'public, s-maxage=60, stale-while-revalidate=30';
+}

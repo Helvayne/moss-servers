@@ -139,6 +139,9 @@ One Vercel serverless function (Node runtime; it needs raw TCP).
    never leave the function.
 4. Response header `Cache-Control: s-maxage=60, stale-while-revalidate=30`, so the CDN serves cached
    results and each server is pinged at most about once a minute regardless of traffic.
+   If any server looked offline, the response is cached for 20 s instead
+   (`s-maxage=20, stale-while-revalidate=10`): the home connection drops a second status ping from the
+   same address within ~10-15 s (measured 2026-10-05), and a dropped ping looks like "offline".
 
 Client: fetches once on load, then every 60 s while `document.visibilityState === "visible"`.
 Any fetch error leaves indicators grey; the rest of the page is unaffected.
