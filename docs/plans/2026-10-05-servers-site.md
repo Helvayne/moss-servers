@@ -90,6 +90,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/node": "^22.0.0",
     "typescript": "^6.0.0",
     "vitest": "^5.0.3"
   }
@@ -879,8 +880,12 @@ export function formatBytes(n: number): string {
   return `${(n / 1_000_000_000).toFixed(1).replace(/\.0$/, '')} GB`;
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+// Fixed month names: ICU output differs between runtimes (e.g. "Sept" in en-GB).
 export function formatDate(d: Date | string): string {
-  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  const date = new Date(d);
+  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 ```
 
