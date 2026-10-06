@@ -6,7 +6,7 @@ changelogs and news. One page, built with [Astro](https://astro.build) and hoste
 Design: [`docs/specs/2026-10-05-servers-site-design.md`](docs/specs/2026-10-05-servers-site-design.md)
 
 > **This repo is public.** Never commit IP addresses, port numbers, player names or anything else
-> private. CI checks for IP addresses and for every value in the `PRIVACY_DENYLIST` secret.
+> private. CI checks for IP addresses, plus any values in the optional `PRIVACY_DENYLIST` secret.
 
 ## Editing content
 
@@ -110,8 +110,8 @@ python scripts/privacy_check.py
 ## One-time setup
 
 1. **Vercel:** Add New → Project → import this repo. Defaults are fine.
-2. **Secret:** Settings → Secrets and variables → Actions → `PRIVACY_DENYLIST`, one private value per
-   line (real address, old hostnames, ports, player names).
+2. **Optional secret:** Settings → Secrets and variables → Actions → `PRIVACY_DENYLIST`, one private
+   value per line (e.g. player names). Without it, CI still checks for IP addresses.
 3. **Domain:** in Vercel, Domains → add `servers.justinhere.net`, then add the CNAME record it shows at
    the DNS provider.
 4. **Search engines:** `noindex` is on. Set `noindex: false` in `src/site.config.ts` to allow indexing.
