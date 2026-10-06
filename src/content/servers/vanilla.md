@@ -5,6 +5,7 @@ game: minecraft-java
 version: "Paper 1.21.11"
 address: mc.justinhere.net
 status: live
+icon: /icons/moss.png
 join:
   - "Open **Minecraft: Java Edition 1.21.11** (no mods needed)."
   - Go to **Multiplayer → Add Server** and enter `mc.justinhere.net`.

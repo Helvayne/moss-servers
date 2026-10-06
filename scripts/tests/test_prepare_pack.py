@@ -133,6 +133,65 @@ class PreparePackTest(unittest.TestCase):
         self.assertEqual(sorted(os.listdir(out)),
                          ["cogsandcurses-3.0.0-full.mrpack", "cogsandcurses-3.0.0-lite.mrpack"])
 
+    def test_main_writes_update_zip(self):
+        full, lite = os.path.join(self.d, "f.mrpack"), os.path.join(self.d, "l.mrpack")
+        make_pack(full)
+        make_pack(lite)
+        upd = os.path.join(self.d, "u.zip")
+        with zipfile.ZipFile(upd, "w") as z:
+            z.writestr("Wrap/mods/a.jar", b"jar")
+        out = os.path.join(self.d, "out")
+        pp.main(["cogsandcurses", "4.0.0", full, lite, "--update", upd, "--content", self.content, "--out", out])
+        self.assertIn("cogsandcurses-4.0.0-update.zip", os.listdir(out))
+
+
+class UpdateZipTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.d = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def make_zip(self, entries):
+        p = os.path.join(self.d, "in.zip")
+        with zipfile.ZipFile(p, "w") as z:
+            for name, data in entries.items():
+                z.writestr(name, data)
+        return p
+
+    def test_keeps_mods_and_resourcepacks_under_a_wrapper_folder(self):
+        src = self.make_zip({
+            "CnC_UpdateYourself/mods/a.jar": b"jar",
+            "CnC_UpdateYourself/mods/old.jar.disabled": b"x",
+            "CnC_UpdateYourself/resourcepacks/r.zip": b"rp",
+            "CnC_UpdateYourself/mods/mcef-cache/Visited Links": b"history",
+            "CnC_UpdateYourself/mods/mcef-cache/Cookies": b"c",
+            "CnC_UpdateYourself/config/x.toml": b"x",
+        })
+        dst = os.path.join(self.d, "out.zip")
+        report = pp.prepare_update_zip(src, dst)
+        with zipfile.ZipFile(dst) as z:
+            self.assertEqual(sorted(z.namelist()),
+                             ["mods/a.jar", "mods/old.jar.disabled", "resourcepacks/r.zip"])
+        self.assertEqual(report["jars"], 1)
+        self.assertEqual(report["dropped"], 3)
+
+    def test_rejects_a_zip_without_mods(self):
+        src = self.make_zip({"resourcepacks/r.zip": b"rp"})
+        with self.assertRaises(SystemExit):
+            pp.prepare_update_zip(src, os.path.join(self.d, "o.zip"))
+
+
+class SizeLimitTest(unittest.TestCase):
+    def test_rejects_files_over_the_release_limit(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "big.bin")
+            with open(p, "wb") as f:
+                f.truncate(pp.MAX_RELEASE_BYTES + 1)
+            with self.assertRaises(SystemExit):
+                pp.check_size(p)
+
 
 if __name__ == "__main__":
     unittest.main()

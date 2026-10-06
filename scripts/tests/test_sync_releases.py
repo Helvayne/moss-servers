@@ -31,6 +31,12 @@ class BuildReleasesTest(unittest.TestCase):
                                                  "url": "https://dl/cogsandcurses-3.0.0-full.mrpack"})
         self.assertEqual(sorted(cnc["assets"]), ["full", "lite"])
 
+    def test_accepts_zip_assets(self):
+        out = build_releases([rel("p-v4.0.0", "2026-10-06T00:00:00Z",
+                                  [("p-4.0.0-full.mrpack", 2), ("p-4.0.0-update.zip", 9)])])
+        self.assertEqual(sorted(out["packs"]["p"]["assets"]), ["full", "update"])
+        self.assertEqual(out["packs"]["p"]["assets"]["update"]["name"], "p-4.0.0-update.zip")
+
     def test_ignores_assets_with_other_names(self):
         out = build_releases([rel("p-v1.0.0", "2026-01-01T00:00:00Z", [("notes.txt", 1), ("p-1.0.0-full.mrpack", 2)])])
         self.assertEqual(list(out["packs"]["p"]["assets"]), ["full"])

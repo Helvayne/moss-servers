@@ -14,7 +14,9 @@ const { title = site.name } = Astro.props;
     <meta name="description" content={site.tagline} />
     <meta name="theme-color" content="#0f1510" />
     {site.noindex && <meta name="robots" content="noindex, nofollow" />}
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>{title}</title>
   </head>
   <body>

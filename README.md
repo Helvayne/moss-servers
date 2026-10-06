@@ -33,6 +33,7 @@ changelog and news files.
 | `status` | yes | `live` (live dot), `on-request` (grey "On request"), `none` (no indicator), `hidden` (not shown) |
 | `pack` | no | Links the Downloads section to releases tagged `<pack>-v<version>` |
 | `ram` | no | Shown under the join steps |
+| `icon` | no | Card icon, a file in `public/icons/` (e.g. `/icons/moss.png`); otherwise the name's initials |
 | `join` | yes | List of steps; Markdown allowed |
 | `downloads` | no | One entry per pack file: `variant`, `label`, optional `note` (Markdown, shown above the button) |
 
@@ -73,13 +74,16 @@ Set `enabled: true` and write the message below the settings block. Set it back 
 1. Export the Full and Lite profiles from the Modrinth App (profile → ⋯ → Export).
 2. Prepare them:
    ```bash
-   python scripts/prepare_pack.py cogsandcurses 3.0.1 "path/to/Full export.mrpack" "path/to/Lite export.mrpack"
+   python scripts/prepare_pack.py cogsandcurses 4.0.1 "path/to/Full export.mrpack" "path/to/Lite export.mrpack" --update "path/to/UpdateYourself.zip"
    ```
+   `--update` is optional: a zip of `mods/` and `resourcepacks/` for players who update by hand. It becomes
+   `<pack>-<version>-update.zip` (one wrapper folder is fine; caches and configs are dropped). Every file
+   must be under 2 GB (GitHub's limit), so export the Full pack **without** the Distant Horizons cache.
    This writes cleaned copies to `dist/packs/` and prints the release tag. It replaces your personal
    server list with just this server, removes `lastServer`, saves, screenshots, logs, waypoints and
    command history, and checks that both files target the same Minecraft and loader versions.
-3. On GitHub, **Releases → Draft a new release**, use the printed tag (e.g. `cogsandcurses-v3.0.1`),
-   attach both files, and publish. Drafts and pre-releases are ignored by the site, so you can test first.
+3. On GitHub, **Releases → Draft a new release**, use the printed tag (e.g. `cogsandcurses-v4.0.1`),
+   attach the files, and publish. Drafts and pre-releases are ignored by the site, so you can test first.
 4. Add a changelog entry and check the download notes in the server file still apply.
 
 Publishing (or editing/deleting) a release runs the **Sync pack releases** workflow, which updates

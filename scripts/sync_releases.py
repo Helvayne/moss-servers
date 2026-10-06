@@ -2,7 +2,7 @@
 """Write src/data/releases.json from this repo's GitHub releases.
 
 Picks, per pack, the newest published release (not draft, not prerelease) whose tag is
-<pack>-v<version>, and maps its <pack>-<version>-<variant>.mrpack assets to variants.
+<pack>-v<version>, and maps its <pack>-<version>-<variant>.mrpack (or .zip) assets to variants.
 Usage: python scripts/sync_releases.py --repo OWNER/NAME --out src/data/releases.json
 Reads an optional GITHUB_TOKEN from the environment.
 """
@@ -23,7 +23,7 @@ def build_releases(api_releases):
         current = packs.get(pack)
         if current and current["publishedAt"] >= r["published_at"]:
             continue
-        asset_re = re.compile(rf"^{re.escape(pack)}-{re.escape(version)}-(?P<variant>[a-z0-9-]+)\.mrpack$")
+        asset_re = re.compile(rf"^{re.escape(pack)}-{re.escape(version)}-(?P<variant>[a-z0-9-]+)\.(?:mrpack|zip)$")
         assets = {}
         for a in r.get("assets", []):
             am = asset_re.match(a["name"])

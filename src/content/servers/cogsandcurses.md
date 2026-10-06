@@ -5,6 +5,7 @@ game: minecraft-java
 version: "1.21.1 · NeoForge 21.1.248"
 address: cogsandcurses.justinhere.net
 status: live
+icon: /icons/cogsandcurses.webp
 pack: cogsandcurses
 ram: 8 GB for Full, 6 GB for Lite
 join:
@@ -18,13 +19,18 @@ downloads:
   - variant: full
     label: Full
     note: |
-      **Updating from an older version?** Import the new pack as a fresh instance instead of updating
-      over the old one, so removed mods don't linger.
-
-      Full includes a pre-built distant-terrain cache (about 550 MB) so far-away land shows up straight away.
+      **Coming from 3.x?** Import this as a fresh instance instead of updating over the old one,
+      so removed mods don't linger. Your Distant Horizons terrain cache carries over.
   - variant: lite
     label: Lite (low-end PCs)
     note: Same server and world, without the client-side visual extras. Pick this if Full runs poorly.
+  - variant: update
+    label: Update mods only (.zip)
+    note: |
+      For **Full** players who'd rather not reinstall. Back up your instance, then in the Modrinth App open
+      the instance's folder (**⋯ → Open folder**), **delete everything in `mods`**, and copy in the `mods`
+      and `resourcepacks` folders from this zip. Configs aren't included, so if Distant Horizons offers to
+      update itself, say no. Lite players: re-import the Lite pack instead.
 ---
 A Create-focused modpack: build machines, trains and flying contraptions, with a spooky twist
 of extra mobs, dungeons and magic mixed in. Voice chat is built in.

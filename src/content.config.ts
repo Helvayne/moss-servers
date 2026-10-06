@@ -19,6 +19,7 @@ const servers = defineCollection({
       status: z.enum(['live', 'on-request', 'none', 'hidden']),
       pack: slug.optional(),
       ram: z.string().optional(),
+      icon: z.string().regex(/^\/icons\/[\w.-]+\.(png|webp|svg)$/, 'icon must be a file in public/icons/').optional(),
       join: z.array(z.string()).min(1),
       downloads: z.array(z.object({ variant: slug, label: z.string(), note: z.string().optional() })).default([]),
     })

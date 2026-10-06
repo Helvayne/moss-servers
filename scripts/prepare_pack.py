@@ -3,15 +3,18 @@
 
 Usage:
   python scripts/prepare_pack.py <pack> <version> <full.mrpack> <lite.mrpack>
-                                 [--content src/content/servers] [--out dist/packs]
+                                 [--update mods.zip] [--content src/content/servers] [--out dist/packs]
 
 For each export it writes <out>/<pack>-<version>-<variant>.mrpack with:
   - overrides/servers.dat replaced by a single entry for this pack's server
   - lastServer removed from options.txt
   - saves, screenshots, logs, crash reports, minimap waypoints and command history removed
   - modrinth.index.json versionId/name set
-Fails if the two exports disagree on Minecraft/loader versions, or if the lite export
-contains Distant Horizons server data. Standard library only.
+--update also writes <out>/<pack>-<version>-update.zip: just the mods/ and resourcepacks/ files from
+a "drop these into your instance" zip (one wrapper folder is allowed; caches and configs are dropped).
+Fails if the two exports disagree on Minecraft/loader versions, if the lite export contains
+Distant Horizons server data, or if any output is too big for a GitHub release asset.
+Standard library only.
 """
 import argparse, json, os, re, struct, sys, zipfile
 
@@ -20,6 +23,7 @@ REMOVED_DIRS = {"saves", "screenshots", "logs", "crash-reports", "xaero", "Xaero
                 "journeymap"}
 REMOVED_FILES = {"command_history.txt", "servers.dat_old"}
 DH_DIR = "Distant_Horizons_server_data"
+MAX_RELEASE_BYTES = 2 * 1024**3 - 1  # GitHub release assets must be under 2 GiB
 
 
 def _nbt_string(s):
@@ -113,6 +117,42 @@ def sanitize_pack(src, dst, *, pack, version, variant, server_name, address):
             "minecraft": deps.get("minecraft"), "loader": _loader(deps)}
 
 
+def check_size(path):
+    size = os.path.getsize(path)
+    if size > MAX_RELEASE_BYTES:
+        sys.exit(f"{path} is {size / 1e9:.2f} GB; GitHub release files must be under 2 GiB. "
+                 f"For a full pack, export without the Distant Horizons cache.")
+
+
+def prepare_update_zip(src, dst):
+    """Copy only top-level files in mods/ plus everything in resourcepacks/ (wrapper folder stripped)."""
+    with zipfile.ZipFile(src) as zin:
+        infos = [i for i in zin.infolist() if not i.is_dir()]
+        firsts = {i.filename.split("/", 1)[0] for i in infos}
+        wrapper = next(iter(firsts)) + "/" if len(firsts) == 1 and firsts - {"mods", "resourcepacks"} else ""
+        kept = dropped = jars = 0
+        os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
+        with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
+            for info in infos:
+                rel = info.filename[len(wrapper):]
+                parts = rel.split("/")
+                keep = (parts[0] == "mods" and len(parts) == 2) or (parts[0] == "resourcepacks" and len(parts) >= 2)
+                if not keep:
+                    dropped += 1
+                    continue
+                zi = zipfile.ZipInfo(rel, info.date_time)
+                zi.compress_type = zipfile.ZIP_DEFLATED
+                with zin.open(info) as fsrc, zout.open(zi, "w") as fdst:
+                    while chunk := fsrc.read(1 << 20):
+                        fdst.write(chunk)
+                kept += 1
+                jars += rel.endswith(".jar") and parts[0] == "mods"
+    if jars == 0:
+        os.remove(dst)
+        sys.exit(f"{src}: no mods/*.jar found")
+    return {"size": os.path.getsize(dst), "jars": jars, "files": kept, "dropped": dropped}
+
+
 def _deps(path):
     with zipfile.ZipFile(path) as z:
         return json.loads(z.read("modrinth.index.json")).get("dependencies", {})
@@ -124,6 +164,7 @@ def main(argv=None):
     ap.add_argument("version")
     ap.add_argument("full")
     ap.add_argument("lite")
+    ap.add_argument("--update", help="optional mods/resourcepacks zip for players updating by hand")
     ap.add_argument("--content", default="src/content/servers")
     ap.add_argument("--out", default="dist/packs")
     args = ap.parse_args(argv)
@@ -136,10 +177,17 @@ def main(argv=None):
         dst = os.path.join(args.out, f"{args.pack}-{args.version}-{variant}.mrpack")
         r = sanitize_pack(src, dst, pack=args.pack, version=args.version, variant=variant,
                           server_name=info["name"], address=info["address"])
-        print(f"{variant:5} {dst}\n      {r['size'] / 1e6:.1f} MB, {r['mods']} indexed mods, {r['overrides']} override files, "
-              f"Minecraft {r['minecraft']}, {r['loader']}")
+        check_size(dst)
+        print(f"{variant:6} {dst}\n       {r['size'] / 1e6:.1f} MB, {r['mods']} indexed mods, "
+              f"{r['overrides']} override files, Minecraft {r['minecraft']}, {r['loader']}")
+    if args.update:
+        dst = os.path.join(args.out, f"{args.pack}-{args.version}-update.zip")
+        r = prepare_update_zip(args.update, dst)
+        check_size(dst)
+        print(f"update {dst}\n       {r['size'] / 1e6:.1f} MB, {r['jars']} mod jars, {r['files']} files kept, "
+              f"{r['dropped']} dropped (caches, configs, other folders)")
     print(f"\nCreate a GitHub release with tag: {args.pack}-v{args.version}")
-    print("Attach both files above, then publish.")
+    print("Attach the files above, then publish.")
 
 
 if __name__ == "__main__":

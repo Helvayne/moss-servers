@@ -27,8 +27,10 @@ const sections = [
 ---
 <details class="card" id={id} data-game={d.game}>
   <summary>
-    <span class="avatar" aria-hidden="true">
-      <span class="avatar-text">{serverInitials(d.name)}</span>
+    <span class={`avatar${d.icon ? ' has-icon' : ''}`} aria-hidden="true">
+      {d.icon
+        ? <img src={d.icon} alt="" width="52" height="52" class={d.icon.endsWith('.png') ? 'pixel' : undefined} />
+        : <span class="avatar-text">{serverInitials(d.name)}</span>}
       {initialState && <span class="presence" data-status-for={id} data-state={initialState}></span>}
     </span>
     <span class="card-main">
