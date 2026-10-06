@@ -21,6 +21,8 @@ async function refreshStatus() {
       if (s.online) setStatus(el, 'online', s.players ? `Online · ${s.players.online}/${s.players.max}` : 'Online');
       else setStatus(el, 'offline', 'Offline');
     }
+    const total = Object.values(data).reduce((sum, s) => sum + (s.online && s.players ? s.players.online : 0), 0);
+    document.querySelectorAll('[data-total-online]').forEach((el) => (el.textContent = String(total)));
   } catch {
     // Leave indicators as they are; the page works without status.
   }

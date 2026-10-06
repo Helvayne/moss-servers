@@ -1,0 +1,21 @@
+---
+// One Discord-style "bot message": avatar, author line with timestamp, then content.
+import { formatDate } from '../lib/format';
+import { site } from '../site.config';
+interface Props { date: Date; tag?: string; title?: string }
+const { date, tag, title } = Astro.props;
+---
+<article class="msg">
+  <img class="msg-avatar" src="/favicon.svg" alt="" width="40" height="40" />
+  <div class="msg-body">
+    <p class="msg-head">
+      <span class="msg-author">{site.name}</span>
+      <span class="bot-tag">BOT</span>
+      <time datetime={date.toISOString()}>{formatDate(date)}</time>
+    </p>
+    {(tag || title) && (
+      <p class="msg-title">{tag && <span class="tag">{tag}</span>}{title && <strong>{title}</strong>}</p>
+    )}
+    <div class="msg-content"><slot /></div>
+  </div>
+</article>

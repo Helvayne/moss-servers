@@ -1,6 +1,6 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
-import { formatDate } from '../lib/format';
+import Message from './Message.astro';
 interface Props { entries: CollectionEntry<'changelog'>[] }
 const SHOWN = 3;
 const rendered = await Promise.all(Astro.props.entries.map(async (e) => ({ e, ...(await render(e)) })));
@@ -8,24 +8,18 @@ const recent = rendered.slice(0, SHOWN);
 const older = rendered.slice(SHOWN);
 ---
 {rendered.length === 0 && <p class="muted">No changes recorded yet.</p>}
-<ol class="changelog">
+<div class="messages">
   {recent.map(({ e, Content }) => (
-    <li>
-      <p class="entry-head"><time datetime={e.data.date.toISOString()}>{formatDate(e.data.date)}</time>{e.data.version && <span class="tag">v{e.data.version}</span>}{e.data.title && <strong>{e.data.title}</strong>}</p>
-      <Content />
-    </li>
+    <Message date={e.data.date} tag={e.data.version && `v${e.data.version}`} title={e.data.title}><Content /></Message>
   ))}
-</ol>
+</div>
 {older.length > 0 && (
   <details class="older">
     <summary>Show older ({older.length})</summary>
-    <ol class="changelog">
+    <div class="messages">
       {older.map(({ e, Content }) => (
-        <li>
-          <p class="entry-head"><time datetime={e.data.date.toISOString()}>{formatDate(e.data.date)}</time>{e.data.version && <span class="tag">v{e.data.version}</span>}{e.data.title && <strong>{e.data.title}</strong>}</p>
-          <Content />
-        </li>
+        <Message date={e.data.date} tag={e.data.version && `v${e.data.version}`} title={e.data.title}><Content /></Message>
       ))}
-    </ol>
+    </div>
   </details>
 )}

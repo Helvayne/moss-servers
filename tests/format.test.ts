@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatBytes, formatDate } from '../src/lib/format';
+import { formatBytes, formatDate, serverInitials } from '../src/lib/format';
 import { md, mdInline } from '../src/lib/markdown';
 
 describe('format', () => {
@@ -15,5 +15,17 @@ describe('format', () => {
   it('renders markdown', () => {
     expect(mdInline('**hi**')).toBe('<strong>hi</strong>');
     expect(md('a\n\n- b')).toContain('<li>b</li>');
+  });
+});
+
+describe('serverInitials', () => {
+  it.each([
+    ['Cogs & Curses', 'C&C'],
+    ['Moss Vanilla', 'MV'],
+    ['SkyFactory 3', 'SF3'],
+    ['Hytale', 'H'],
+    ['a very long server name here', 'AVL'],
+  ])('%s -> %s', (name, expected) => {
+    expect(serverInitials(name)).toBe(expected);
   });
 });

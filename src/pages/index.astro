@@ -32,11 +32,21 @@ const serverNames = Object.fromEntries(allServers.map((s) => [s.id, s.data.name]
   <Banner />
   <header class="site-header">
     <div class="wrap">
-      <h1>{site.name}</h1>
-      <p class="tagline">{site.tagline}</p>
+      <div class="hero">
+        <img class="hero-icon" src="/favicon.svg" alt="" width="72" height="72" />
+        <div class="hero-text">
+          <h1>{site.name}</h1>
+          <p class="tagline">{site.tagline}</p>
+          <p class="hero-stats">
+            <span class="stat"><span class="stat-dot online" aria-hidden="true"></span><span data-total-online>…</span> playing now</span>
+            <span class="stat"><span class="stat-dot" aria-hidden="true"></span>{cards.length} servers</span>
+          </p>
+        </div>
+      </div>
     </div>
   </header>
   <main class="wrap">
+    <h2 class="channel-heading"><span class="hash" aria-hidden="true">#</span>servers</h2>
     <section class="servers" aria-label="Servers">
       {cards.map((c) => <ServerCard {...c} />)}
     </section>

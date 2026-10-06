@@ -1,4 +1,6 @@
 ---
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/noto-sans';
 import '../styles/global.css';
 import { site } from '../site.config';
 interface Props { title?: string }
@@ -10,6 +12,7 @@ const { title = site.name } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={site.tagline} />
+    <meta name="theme-color" content="#0f1510" />
     {site.noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title}</title>
