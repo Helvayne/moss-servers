@@ -27,7 +27,9 @@ downloads:
   - variant: update
     label: Update mods only (.zip)
     note: |
-      For **Full** players who'd rather not reinstall. Back up your instance, then in the Modrinth App open
+      **Choose this option if you just want to update the modlist without wiping your old settings and map data.**
+
+      For **Full** players. Back up your instance, then in the Modrinth App open
       the instance's folder (**⋯ → Open folder**), **delete everything in `mods`**, and copy in the `mods`
       and `resourcepacks` folders from this zip. Configs aren't included, so if Distant Horizons offers to
       update itself, say no. Lite players: re-import the Lite pack instead.

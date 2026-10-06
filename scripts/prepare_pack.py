@@ -3,7 +3,7 @@
 
 Usage:
   python scripts/prepare_pack.py <pack> <version> <full.mrpack> <lite.mrpack>
-                                 [--update mods.zip] [--content src/content/servers] [--out dist/packs]
+                                 [--update mods.zip] [--content src/content/servers] [--out release-files]
 
 For each export it writes <out>/<pack>-<version>-<variant>.mrpack with:
   - overrides/servers.dat replaced by a single entry for this pack's server
@@ -166,7 +166,7 @@ def main(argv=None):
     ap.add_argument("lite")
     ap.add_argument("--update", help="optional mods/resourcepacks zip for players updating by hand")
     ap.add_argument("--content", default="src/content/servers")
-    ap.add_argument("--out", default="dist/packs")
+    ap.add_argument("--out", default="release-files")  # not dist/: astro build empties it
     args = ap.parse_args(argv)
     if not re.fullmatch(r"\d+\.\d+\.\d+", args.version):
         sys.exit("version must look like 3.0.1")

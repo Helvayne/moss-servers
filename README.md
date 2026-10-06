@@ -79,7 +79,7 @@ Set `enabled: true` and write the message below the settings block. Set it back 
    `--update` is optional: a zip of `mods/` and `resourcepacks/` for players who update by hand. It becomes
    `<pack>-<version>-update.zip` (one wrapper folder is fine; caches and configs are dropped). Every file
    must be under 2 GB (GitHub's limit), so export the Full pack **without** the Distant Horizons cache.
-   This writes cleaned copies to `dist/packs/` and prints the release tag. It replaces your personal
+   This writes cleaned copies to `release-files/` and prints the release tag. It replaces your personal
    server list with just this server, removes `lastServer`, saves, screenshots, logs, waypoints and
    command history, and checks that both files target the same Minecraft and loader versions.
 3. On GitHub, **Releases → Draft a new release**, use the printed tag (e.g. `cogsandcurses-v4.0.1`),
