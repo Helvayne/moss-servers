@@ -1,1 +1,27 @@
-{ "packs": {} }
+{
+  "packs": {
+    "cogsandcurses": {
+      "tag": "cogsandcurses-v4.0.0",
+      "version": "4.0.0",
+      "publishedAt": "2026-10-06T22:01:22Z",
+      "url": "https://github.com/Helvayne/moss-servers/releases/tag/cogsandcurses-v4.0.0",
+      "assets": {
+        "full": {
+          "name": "cogsandcurses-4.0.0-full.mrpack",
+          "size": 63554247,
+          "url": "https://github.com/Helvayne/moss-servers/releases/download/cogsandcurses-v4.0.0/cogsandcurses-4.0.0-full.mrpack"
+        },
+        "lite": {
+          "name": "cogsandcurses-4.0.0-lite.mrpack",
+          "size": 61106839,
+          "url": "https://github.com/Helvayne/moss-servers/releases/download/cogsandcurses-v4.0.0/cogsandcurses-4.0.0-lite.mrpack"
+        },
+        "update": {
+          "name": "cogsandcurses-4.0.0-update.zip",
+          "size": 1182744661,
+          "url": "https://github.com/Helvayne/moss-servers/releases/download/cogsandcurses-v4.0.0/cogsandcurses-4.0.0-update.zip"
+        }
+      }
+    }
+  }
+}
