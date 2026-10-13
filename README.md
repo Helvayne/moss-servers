@@ -36,6 +36,7 @@ changelog and news files.
 | `icon` | no | Card icon, a file in `public/icons/` (e.g. `/icons/moss.png`); otherwise the name's initials |
 | `join` | yes | List of steps; Markdown allowed |
 | `downloads` | no | One entry per pack file: `variant`, `label`, optional `note` (Markdown, shown above the button) |
+| `downloadGroups` | no | Boxes the downloads are shown in, in order: `title`, optional `intro`, optional `highlight: true` (green border), and the `variants` it holds. Anything not listed goes in a box at the end |
 
 The Markdown below the settings block is the **About** section.
 

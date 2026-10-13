@@ -22,11 +22,22 @@ const servers = defineCollection({
       icon: z.string().regex(/^\/icons\/[\w.-]+\.(png|webp|svg)$/, 'icon must be a file in public/icons/').optional(),
       join: z.array(z.string()).min(1),
       downloads: z.array(z.object({ variant: slug, label: z.string(), note: z.string().optional() })).default([]),
+      downloadGroups: z
+        .array(z.object({
+          title: z.string(),
+          intro: z.string().optional(),
+          highlight: z.boolean().optional(),
+          variants: z.array(slug).min(1),
+        }))
+        .default([]),
     })
     .refine((d) => d.status !== 'live' || (d.game === 'minecraft-java' && !!d.address), {
       message: 'status: live needs game: minecraft-java and an address',
     })
-    .refine((d) => d.downloads.length === 0 || !!d.pack, { message: 'downloads need a pack' }),
+    .refine((d) => d.downloads.length === 0 || !!d.pack, { message: 'downloads need a pack' })
+    .refine((d) => d.downloadGroups.every((g) => g.variants.every((v) => d.downloads.some((x) => x.variant === v))), {
+      message: 'downloadGroups lists a variant that is not in downloads',
+    }),
 });
 
 const changelog = defineCollection({

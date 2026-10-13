@@ -239,19 +239,55 @@ button.copy:hover { background: #2f3e31; }
 
 /* Expanded panel: channel list */
 .panel { border-top: 1px solid var(--border); padding: 8px 10px 10px; background: rgb(0 0 0 / 0.12); }
+.section + .section { margin-top: 6px; }
 .section > summary {
   cursor: pointer;
   list-style: none;
-  padding: 6px 8px;
-  border-radius: 6px;
-  color: var(--muted);
-  font-weight: 600;
-  transition: background 0.12s, color 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-strong);
+  background: var(--surface-2);
+  color: var(--text);
+  font: 650 1rem/1.2 var(--font);
+  transition: background 0.12s, border-color 0.12s, transform 0.12s;
 }
 .section > summary::-webkit-details-marker { display: none; }
-.section > summary:hover { background: var(--surface-3); color: var(--text); }
-.section[open] > summary { color: var(--text); }
-.section-body { padding: 4px 8px 14px 26px; }
+.section > summary:hover { background: var(--surface-3); border-color: rgb(116 210 131 / 0.45); border-left-color: var(--accent); }
+.section > summary:active { transform: translateY(1px); }
+.section[open] > summary { background: var(--surface-3); border-left-color: var(--accent); }
+.section-icon {
+  width: 20px; height: 20px; flex: none;
+  fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.section-name { flex: 1; }
+.section > summary .hash { color: var(--accent-strong); }
+.section-badge {
+  font-size: 0.74rem; font-weight: 700; padding: 2px 9px; border-radius: 999px;
+  background: var(--accent-strong); color: #f2fff4;
+}
+.section-chevron {
+  width: 8px; height: 8px; flex: none; margin-right: 4px;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg); transition: transform 0.15s;
+}
+.section[open] > summary .section-chevron { transform: rotate(45deg); }
+
+/* Downloads gets the loudest label: it's the one people were missing. */
+.section > summary.section-downloads {
+  border-color: rgb(116 210 131 / 0.55);
+  border-left-color: var(--accent);
+  background: linear-gradient(90deg, rgb(79 179 98 / 0.28), rgb(79 179 98 / 0.08) 70%), var(--surface-2);
+  box-shadow: 0 0 0 1px rgb(116 210 131 / 0.12), 0 6px 18px rgb(0 0 0 / 0.25);
+}
+.section > summary.section-downloads:hover { background: linear-gradient(90deg, rgb(79 179 98 / 0.4), rgb(79 179 98 / 0.12) 70%), var(--surface-3); }
+.section:not([open]) > summary.section-downloads .section-badge { animation: glow 2.4s ease-in-out infinite; }
+@keyframes glow { 50% { box-shadow: 0 0 0 4px rgb(116 210 131 / 0.25); } }
+
+.section-body { padding: 12px 8px 16px 14px; }
 .section-body > :first-child { margin-top: 0; }
 .section-body p { margin: 0 0 0.7em; }
 .steps { padding-left: 1.2em; margin: 0; }
@@ -263,6 +299,14 @@ button.copy:hover { background: #2f3e31; }
 .downloads { display: grid; gap: 14px; }
 .downloads > p { margin: 0; }
 .download { display: grid; gap: 8px; justify-items: start; }
+.dl-group { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; background: var(--surface); display: grid; gap: 14px; }
+.dl-group-title { margin: 0; font: 750 1.05rem/1.25 var(--font-display); letter-spacing: 0.01em; }
+.dl-group-intro > :first-child { margin-top: 0; }
+.dl-group-intro > :last-child { margin-bottom: 0; }
+.dl-group-intro { color: var(--muted); }
+.dl-highlight { border: 2px solid var(--accent-strong); background: linear-gradient(180deg, rgb(79 179 98 / 0.14), transparent 60%), var(--surface); }
+.dl-highlight .dl-group-title { color: var(--accent); }
+.dl-arrow { font-weight: 800; }
 .note {
   width: 100%;
   background: var(--surface-2);
@@ -337,7 +381,8 @@ button.copy:hover { background: #2f3e31; }
   }
   .status { justify-self: start; }
   .avatar { width: 44px; height: 44px; font-size: 0.9rem; }
-  .section-body { padding-left: 12px; }
+  .section-body { padding-left: 4px; padding-right: 4px; }
+  .dl-group { padding: 12px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

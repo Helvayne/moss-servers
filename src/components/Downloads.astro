@@ -1,22 +1,30 @@
 ---
-import type { Downloads } from '../lib/releases';
+import { groupDownloads, type Downloads, type DownloadGroupSpec } from '../lib/releases';
 import { md } from '../lib/markdown';
 import { formatBytes, formatDate } from '../lib/format';
 import { site } from '../site.config';
-interface Props { downloads: Downloads }
-const { downloads } = Astro.props;
+interface Props { downloads: Downloads; groups: DownloadGroupSpec[] }
+const { downloads, groups } = Astro.props;
+const arranged = downloads.state === 'ok' ? groupDownloads(downloads.items, groups) : [];
 ---
 {downloads.state === 'missing-release' && <p class="muted">No download yet. Check back soon.</p>}
 {downloads.state === 'ok' && (
   <div class="downloads">
     <p class="muted">Version <strong>{downloads.version}</strong>, released {formatDate(downloads.publishedAt)}.</p>
-    {downloads.items.map((item) => (
-      <div class="download">
-        {item.note && <div class="note" set:html={md(item.note)} />}
-        <a class="button" href={item.asset.url} download>
-          Download {item.label} <span class="size">{formatBytes(item.asset.size)}</span>
-        </a>
-      </div>
+    {arranged.map((g) => (
+      <section class:list={['dl-group', { 'dl-highlight': g.highlight }]}>
+        {g.title && <h3 class="dl-group-title">{g.title}</h3>}
+        {g.intro && <div class="dl-group-intro" set:html={md(g.intro)} />}
+        {g.items.map((item) => (
+          <div class="download">
+            {item.note && <div class="note" set:html={md(item.note)} />}
+            <a class="button" href={item.asset.url} download>
+              <span class="dl-arrow" aria-hidden="true">↓</span> Download {item.label}
+              <span class="size">{formatBytes(item.asset.size)}</span>
+            </a>
+          </div>
+        ))}
+      </section>
     ))}
     <p class="muted small"><a href={`https://github.com/${site.repo}/releases`}>Older versions</a></p>
   </div>

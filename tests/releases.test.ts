@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveDownloads, type ReleasesFile } from '../src/lib/releases';
+import { resolveDownloads, groupDownloads, type ReleasesFile } from '../src/lib/releases';
 
 const releases: ReleasesFile = {
   packs: {
@@ -35,5 +35,31 @@ describe('resolveDownloads', () => {
   it('throws when the release lacks a listed variant', () => {
     expect(() => resolveDownloads('cnc', 'cogsandcurses', [{ variant: 'shaders', label: 'S' }], releases))
       .toThrow(/shaders/);
+  });
+});
+
+describe('groupDownloads', () => {
+  const asset = { name: 'x', size: 1, url: 'u' };
+  const items = [
+    { variant: 'full', label: 'Full', asset },
+    { variant: 'lite', label: 'Lite', asset },
+    { variant: 'update', label: 'Update', asset },
+  ];
+  it('orders groups and items as configured', () => {
+    const groups = groupDownloads(items, [
+      { title: 'Existing players', highlight: true, variants: ['update'] },
+      { title: 'New players', variants: ['full', 'lite'] },
+    ]);
+    expect(groups.map((g) => [g.title, g.highlight, g.items.map((i) => i.variant)])).toEqual([
+      ['Existing players', true, ['update']],
+      ['New players', false, ['full', 'lite']],
+    ]);
+  });
+  it('puts everything in one untitled group when no groups are configured', () => {
+    expect(groupDownloads(items, [])).toEqual([{ title: undefined, intro: undefined, highlight: false, items }]);
+  });
+  it('appends variants no group mentions', () => {
+    const groups = groupDownloads(items, [{ title: 'Update', variants: ['update'] }]);
+    expect(groups.map((g) => g.items.map((i) => i.variant))).toEqual([['update'], ['full', 'lite']]);
   });
 });

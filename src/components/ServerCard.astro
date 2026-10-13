@@ -18,12 +18,20 @@ const { Content } = await render(server);
 const gameLabel = d.game === 'hytale' ? 'Hytale' : 'Minecraft Java';
 const initialState = d.status === 'live' ? 'checking' : d.status === 'on-request' ? 'on-request' : null;
 const initialText = { checking: 'Checking…', 'on-request': 'On request' } as const;
+// 24x24 stroke icons for the section labels.
+const ICONS = {
+  about: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  join: '<path d="M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/>',
+  downloads: '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>',
+  changelog: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+} as const;
+const badge = downloads.state === 'ok' ? `v${downloads.version}` : undefined;
 const sections = [
   { key: 'about', channel: 'about', open: true },
   { key: 'join', channel: 'how-to-join', open: true },
-  ...(downloads.state !== 'none' ? [{ key: 'downloads', channel: 'downloads', open: false }] : []),
+  ...(downloads.state !== 'none' ? [{ key: 'downloads', channel: 'downloads', open: false, badge }] : []),
   { key: 'changelog', channel: 'changelog', open: false },
-];
+] as { key: keyof typeof ICONS; channel: string; open: boolean; badge?: string }[];
 ---
 <details class="card" id={id} data-game={d.game}>
   <summary>
@@ -53,7 +61,12 @@ const sections = [
   <div class="panel">
     {sections.map((s) => (
       <details class="section" id={`${id}-${s.key}`} open={s.open}>
-        <summary><span class="hash" aria-hidden="true">#</span>{s.channel}</summary>
+        <summary class={`section-label section-${s.key}`}>
+          <svg class="section-icon" viewBox="0 0 24 24" aria-hidden="true" set:html={ICONS[s.key]} />
+          <span class="section-name"><span class="hash" aria-hidden="true">#</span>{s.channel}</span>
+          {s.badge && <span class="section-badge">{s.badge}</span>}
+          <span class="section-chevron" aria-hidden="true"></span>
+        </summary>
         <div class="section-body">
           {s.key === 'about' && <Content />}
           {s.key === 'join' && (
@@ -62,7 +75,7 @@ const sections = [
               {d.ram && <p class="muted small">Recommended memory: {d.ram}.</p>}
             </>
           )}
-          {s.key === 'downloads' && <Downloads downloads={downloads} />}
+          {s.key === 'downloads' && <Downloads downloads={downloads} groups={d.downloadGroups} />}
           {s.key === 'changelog' && <Changelog entries={changelog} />}
         </div>
       </details>

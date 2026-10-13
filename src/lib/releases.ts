@@ -33,3 +33,20 @@ export function resolveDownloads(
     items: downloads.map((d) => ({ ...d, asset: release.assets[d.variant] })),
   };
 }
+
+export type DownloadGroupSpec = { title: string; intro?: string; highlight?: boolean; variants: string[] };
+export type DownloadGroup = { title?: string; intro?: string; highlight: boolean; items: DownloadItem[] };
+
+// Arrange download items into the server file's groups, in that order. Variants no group
+// mentions go into a trailing untitled group so nothing silently disappears.
+export function groupDownloads(items: DownloadItem[], groups: DownloadGroupSpec[]): DownloadGroup[] {
+  const used = new Set<string>();
+  const out: DownloadGroup[] = groups.map((g) => {
+    const groupItems = g.variants.flatMap((v) => items.filter((i) => i.variant === v));
+    groupItems.forEach((i) => used.add(i.variant));
+    return { title: g.title, intro: g.intro, highlight: g.highlight ?? false, items: groupItems };
+  });
+  const rest = items.filter((i) => !used.has(i.variant));
+  if (rest.length > 0) out.push({ title: undefined, intro: undefined, highlight: false, items: rest });
+  return out.filter((g) => g.items.length > 0);
+}
